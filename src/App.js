@@ -6,22 +6,24 @@ import Notification from './components/notification'
 import Togglable from './components/Togglable'
 import LoginForm from './components/LoginForm'
 import BlogAdditionForm from './components/BlogAdditionForm'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { setNotification } from './reducers/notificationReducer'
+import { initializeBlogs } from './reducers/blogReducer'
 
 const App = () => {
-  const [blogs, setBlogs] = useState([])
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
   const noteFormRef = useRef()
 
-  useEffect(() => {
-    blogService.getAll().then(blogs =>
-      setBlogs( blogs )
-    )
-  }, [])
+  const dispatch = useDispatch()
 
+  useEffect(() => {
+    dispatch(initializeBlogs()) 
+  }, [dispatch])
+
+  const blogList = useSelector(state => state.blogs)
+ 
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem('loggedNoteappUser')
     if (loggedUserJSON) {
@@ -30,8 +32,6 @@ const App = () => {
       blogService.setToken(user.token)
     }
   }, [])
-
-  const dispatch = useDispatch()
 
   const handleLogin = async event => {
     event.preventDefault()
@@ -78,28 +78,13 @@ const App = () => {
     )
   }
 
-  const addBlog = (blogObject) => {
-    noteFormRef.current.toggleVisibility()
-
-    blogService.create(blogObject).then(returnedBlog => {
-      setBlogs(blogs.concat(returnedBlog))
-
-      const notificationMessage = `a new blog ${returnedBlog.title} by ${returnedBlog.author} added`
-      dispatch(setNotification(notificationMessage, 5))
-    })
-    .catch(error => {
-      const notificationMessage = `error creating blog: ${error.response.data.error}`
-      dispatch(setNotification(notificationMessage, 5))
-    })
-  }
-
   const increaseLikesOf = (id) => {
-    const blog = blogs.find(b => b.id === id)
+    const blog = blogList.find(b => b.id === id)
     const updatedBlog = { ...blog, likes: blog.likes + 1 }
 
     blogService.update(id, updatedBlog)
       .then(returnedBlog => {
-        setBlogs(blogs.map(n => n.id !== id ? n : returnedBlog))
+        //setBlogs(blogs.map(n => n.id !== id ? n : returnedBlog))
 
         const notificationMessage = `liked blog ${returnedBlog.title} by ${returnedBlog.author}`
         dispatch(setNotification(notificationMessage, 5))
@@ -113,7 +98,7 @@ const App = () => {
   const deleteBlog = (id) => {
     blogService.remove(id)
       .then(() => {
-        setBlogs(blogs.filter(b => b.id !== id))
+        //setBlogs(blogs.filter(b => b.id !== id))
 
         const notificationMessage = 'blog deleted'
         dispatch(setNotification(notificationMessage, 5))
@@ -134,7 +119,7 @@ const App = () => {
 
   const BlogFormTogglable = () => (
     <Togglable buttonLabel="create new blog" ref={noteFormRef}>
-      <BlogAdditionForm createBlog={addBlog} />
+      <BlogAdditionForm />
     </Togglable>
   )
 
@@ -155,7 +140,7 @@ const App = () => {
 
       blogs sorted by likes
       <br /><br />
-      {[...blogs].sort((a, b) => b.likes - a.likes).map(blog =>
+      {[...blogList].sort((a, b) => b.likes - a.likes).map(blog =>
         <Blog
           key={blog.id}
           blog={blog}
