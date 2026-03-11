@@ -8,7 +8,7 @@ import LoginForm from './components/LoginForm'
 import BlogAdditionForm from './components/BlogAdditionForm'
 import { useDispatch, useSelector } from 'react-redux'
 import { setNotification } from './reducers/notificationReducer'
-import { initializeBlogs } from './reducers/blogReducer'
+import { initializeBlogs, updateBlogAsync, deleteBlogAsync } from './reducers/blogReducer'
 
 const App = () => {
   const [username, setUsername] = useState('')
@@ -78,35 +78,29 @@ const App = () => {
     )
   }
 
-  const increaseLikesOf = (id) => {
+  const increaseLikesOf = async (id) => {
     const blog = blogList.find(b => b.id === id)
     const updatedBlog = { ...blog, likes: blog.likes + 1 }
 
-    blogService.update(id, updatedBlog)
-      .then(returnedBlog => {
-        //setBlogs(blogs.map(n => n.id !== id ? n : returnedBlog))
-
-        const notificationMessage = `liked blog ${returnedBlog.title} by ${returnedBlog.author}`
-        dispatch(setNotification(notificationMessage, 5))
-      })
-      .catch(error => {
-        const notificationMessage = `error updating likes: ${error.response && error.response.data && error.response.data.error ? error.response.data.error : error.message}`
-        dispatch(setNotification(notificationMessage, 5))
-      })
+    try {
+      await dispatch(updateBlogAsync(updatedBlog))
+      const notificationMessage = `liked blog ${updatedBlog.title} by ${updatedBlog.author}`
+      dispatch(setNotification(notificationMessage, 5))
+     } catch (error) {
+      const notificationMessage = `error updating likes: ${error.response && error.response.data && error.response.data.error ? error.response.data.error : error.message}`
+      dispatch(setNotification(notificationMessage, 5))
+    } 
   }
 
-  const deleteBlog = (id) => {
-    blogService.remove(id)
-      .then(() => {
-        //setBlogs(blogs.filter(b => b.id !== id))
-
-        const notificationMessage = 'blog deleted'
-        dispatch(setNotification(notificationMessage, 5))
-      })
-      .catch(error => {
-        const notificationMessage = `error deleting blog: ${error.response && error.response.data && error.response.data.error ? error.response.data.error : error.message}`
-        dispatch(setNotification(notificationMessage, 5))
-      })
+  const deleteBlog = async (id) => {
+    try {
+      await dispatch(deleteBlogAsync(id))
+      const notificationMessage = 'blog deleted'
+      dispatch(setNotification(notificationMessage, 5))
+    } catch (error) {
+      const notificationMessage = `error deleting blog: ${error.response && error.response.data && error.response.data.error ? error.response.data.error : error.message}`
+      dispatch(setNotification(notificationMessage, 5))
+    }
   }
 
   if (user === null) {

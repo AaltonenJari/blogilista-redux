@@ -13,10 +13,12 @@ const BlogAdditionForm = () => {
       url: event.target.url.value
     }
     try {
-      dispatch(appendBlog(blog))
-      dispatch(setNotification(`a new blog ${blog.title} by ${blog.author} added`, 5))
+      await dispatch(appendBlog(blog))
+      const notificationMessage = `a new blog ${blog.title} by ${blog.author} added`
+      dispatch(setNotification(notificationMessage, 5))
     } catch (error) {
-      dispatch(setNotification('error adding blog', 5))
+      const notificationMessage = `error adding blog: ${error.response && error.response.data && error.response.data.error ? error.response.data.error : error.message}`
+      dispatch(setNotification(notificationMessage, 5))
     }
   }
 
