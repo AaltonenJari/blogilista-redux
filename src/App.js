@@ -6,14 +6,14 @@ import Notification from './components/notification'
 import Togglable from './components/Togglable'
 import LoginForm from './components/LoginForm'
 import BlogAdditionForm from './components/BlogAdditionForm'
+import { useDispatch } from 'react-redux'
+import { setNotification } from './reducers/notificationReducer'
 
 const App = () => {
   const [blogs, setBlogs] = useState([])
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
-  const [notificationMessage, setNotificationMessage] = useState(null)
-  const [notificationStatus, setNotificationStatus] = useState(null)
   const noteFormRef = useRef()
 
   useEffect(() => {
@@ -31,6 +31,8 @@ const App = () => {
     }
   }, [])
 
+  const dispatch = useDispatch()
+
   const handleLogin = async event => {
     event.preventDefault()
     try {
@@ -44,15 +46,11 @@ const App = () => {
       setUser(user)
       setUsername('')
       setPassword('')
+      const notificationMessage = 'welcome back ' + user.name
+      dispatch(setNotification(notificationMessage, 5))
     } catch {
       const notificationMessage = 'wrong username or password'
-      console.log(notificationMessage)
-      setNotificationMessage(notificationMessage)
-      setNotificationStatus('error')
-      setTimeout(() => {
-        setNotificationMessage(null)
-        setNotificationStatus(null)
-      }, 5000)
+      dispatch(setNotification(notificationMessage, 5))
     }
   }
 
@@ -74,7 +72,6 @@ const App = () => {
             handleUsernameChange={({ target }) => setUsername(target.value)}
             handlePasswordChange={({ target }) => setPassword(target.value)}
             handleSubmit={handleLogin}
-            notificationMessage={notificationMessage}
           />
         </Togglable>
       </div>
@@ -88,23 +85,12 @@ const App = () => {
       setBlogs(blogs.concat(returnedBlog))
 
       const notificationMessage = `a new blog ${returnedBlog.title} by ${returnedBlog.author} added`
-      setNotificationMessage(notificationMessage)
-      setNotificationStatus('ok')
-      setTimeout(() => {
-        setNotificationMessage(null)
-        setNotificationStatus(null)
-      }, 5000)
+      dispatch(setNotification(notificationMessage, 5))
     })
-      .catch(error => {
-        const notificationMessage = `error creating blog: ${error.response.data.error}`
-        console.log(notificationMessage)
-        setNotificationMessage(notificationMessage)
-        setNotificationStatus('error')
-        setTimeout(() => {
-          setNotificationMessage(null)
-          setNotificationStatus(null)
-        }, 5000)
-      })
+    .catch(error => {
+      const notificationMessage = `error creating blog: ${error.response.data.error}`
+      dispatch(setNotification(notificationMessage, 5))
+    })
   }
 
   const increaseLikesOf = (id) => {
@@ -116,22 +102,11 @@ const App = () => {
         setBlogs(blogs.map(n => n.id !== id ? n : returnedBlog))
 
         const notificationMessage = `liked blog ${returnedBlog.title} by ${returnedBlog.author}`
-        setNotificationMessage(notificationMessage)
-        setNotificationStatus('ok')
-        setTimeout(() => {
-          setNotificationMessage(null)
-          setNotificationStatus(null)
-        }, 5000)
+        dispatch(setNotification(notificationMessage, 5))
       })
       .catch(error => {
         const notificationMessage = `error updating likes: ${error.response && error.response.data && error.response.data.error ? error.response.data.error : error.message}`
-        console.log(notificationMessage)
-        setNotificationMessage(notificationMessage)
-        setNotificationStatus('error')
-        setTimeout(() => {
-          setNotificationMessage(null)
-          setNotificationStatus(null)
-        }, 5000)
+        dispatch(setNotification(notificationMessage, 5))
       })
   }
 
@@ -141,22 +116,11 @@ const App = () => {
         setBlogs(blogs.filter(b => b.id !== id))
 
         const notificationMessage = 'blog deleted'
-        setNotificationMessage(notificationMessage)
-        setNotificationStatus('ok')
-        setTimeout(() => {
-          setNotificationMessage(null)
-          setNotificationStatus(null)
-        }, 5000)
+        dispatch(setNotification(notificationMessage, 5))
       })
       .catch(error => {
         const notificationMessage = `error deleting blog: ${error.response && error.response.data && error.response.data.error ? error.response.data.error : error.message}`
-        console.log(notificationMessage)
-        setNotificationMessage(notificationMessage)
-        setNotificationStatus('error')
-        setTimeout(() => {
-          setNotificationMessage(null)
-          setNotificationStatus(null)
-        }, 5000)
+        dispatch(setNotification(notificationMessage, 5))
       })
   }
 
@@ -178,7 +142,7 @@ const App = () => {
   return (
     <div>
       <h2>blogs</h2>
-      <Notification status={notificationStatus} message={notificationMessage} />
+      <Notification />
 
       <form onSubmit={handleLogout}>
         <p>
