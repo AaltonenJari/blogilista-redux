@@ -1,7 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
 import Blog from './components/Blog'
-import blogService from './services/blogs'
-import loginService from './services/login'
 import Notification from './components/notification'
 import Togglable from './components/Togglable'
 import LoginForm from './components/LoginForm'
@@ -9,11 +7,11 @@ import BlogAdditionForm from './components/BlogAdditionForm'
 import { useDispatch, useSelector } from 'react-redux'
 import { setNotification } from './reducers/notificationReducer'
 import { initializeBlogs, updateBlogAsync, deleteBlogAsync } from './reducers/blogReducer'
+import { initializeLogin, login, logout } from './reducers/loginReducer'
 
 const App = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [user, setUser] = useState(null)
   const noteFormRef = useRef()
 
   const dispatch = useDispatch()
@@ -23,40 +21,31 @@ const App = () => {
   }, [dispatch])
 
   const blogList = useSelector(state => state.blogs)
- 
+
   useEffect(() => {
-    const loggedUserJSON = window.localStorage.getItem('loggedNoteappUser')
-    if (loggedUserJSON) {
-      const user = JSON.parse(loggedUserJSON)
-      setUser(user)
-      blogService.setToken(user.token)
-    }
-  }, [])
+    dispatch(initializeLogin()) 
+  }, [dispatch])
+
+  const user = useSelector(state => state.login)
 
   const handleLogin = async event => {
     event.preventDefault()
     try {
-      const user = await loginService.login({ username, password })
-
-      window.localStorage.setItem(
-        'loggedNoteappUser', JSON.stringify(user)
-      )
-
-      blogService.setToken(user.token)
-      setUser(user)
+      const user = await dispatch(login(username, password))
       setUsername('')
       setPassword('')
       const notificationMessage = 'welcome back ' + user.name
       dispatch(setNotification(notificationMessage, 5))
     } catch {
+      setUsername('')
+      setPassword('')
       const notificationMessage = 'wrong username or password'
       dispatch(setNotification(notificationMessage, 5))
     }
   }
 
   const handleLogout = () => {
-    window.localStorage.removeItem('loggedNoteappUser')
-    setUser(null)
+    dispatch(logout())
     setUsername('')
     setPassword('')
   }
