@@ -19,7 +19,7 @@ const Blog = ({ blog, userid, increaseLikes, deleteBlog }) => {
     return (
       <div style={blogStyle} data-testid={`blog-${blog.id}`}>
         <span className="blog-title">{blog.title}</span> {blog.author}
-        <button onClick={toggleVisibility}>view</button>
+        <button onClick={toggleVisibility}>show</button>
       </div>
     )
   }

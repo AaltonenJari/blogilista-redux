@@ -12,7 +12,6 @@ const LoginForm = ({
   return (
     <div>
       <h2>Log in to application</h2>
-      <Notification status="error" message={notificationMessage} />
       <form onSubmit={handleSubmit}>
         <div>
           <label>

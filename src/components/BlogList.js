@@ -1,14 +1,11 @@
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { updateBlogAsync, deleteBlogAsync } from '../reducers/blogReducer'
 import Blog from './Blog'
-import BlogAdditionForm from './BlogAdditionForm'
-import Togglable from './Togglable'
 import { initializeBlogs } from '../reducers/blogReducer'
 import { setNotification } from '../reducers/notificationReducer'
 
 const BlogList = (user) => {
-  const noteFormRef = useRef()
 
   const dispatch = useDispatch()
 
@@ -16,13 +13,7 @@ const BlogList = (user) => {
       dispatch(initializeBlogs()) 
     }, [dispatch])
   
-    const blogList = useSelector(state => state.blogs)
-  
-  const BlogFormTogglable = () => (
-    <Togglable buttonLabel="create new" ref={noteFormRef}>
-      <BlogAdditionForm />
-    </Togglable>
-  )
+  const blogList = useSelector(state => state.blogs)
 
   const increaseLikesOf = async (id) => {
     const blog = blogList.find(b => b.id === id)
@@ -52,7 +43,7 @@ const BlogList = (user) => {
 
   return (
     <div>
-      <BlogFormTogglable />
+      <h2>blogs</h2>
 
       {[...blogList].sort((a, b) => b.likes - a.likes).map(blog =>
         <Blog

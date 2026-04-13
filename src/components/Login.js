@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import Togglable from './Togglable'
+import { useDispatch } from 'react-redux'
 import LoginForm from './LoginForm'
-import { initializeLogin, login, logout } from '../reducers/loginReducer'
+import { initializeLogin, login } from '../reducers/loginReducer'
 import { setNotification } from '../reducers/notificationReducer'
 
 const Login = () => {
@@ -14,8 +13,6 @@ const Login = () => {
   useEffect(() => {
     dispatch(initializeLogin()) 
   }, [dispatch])
-
-  const user = useSelector(state => state.login)
 
   const handleLogin = async event => {
     event.preventDefault()
@@ -33,16 +30,8 @@ const Login = () => {
     }
   }
 
-  const handleLogout = () => {
-    dispatch(logout())
-    setUsername('')
-    setPassword('')
-  }
-
-  if (user === null) {
     return (
       <div>
-        <Togglable buttonLabel='login'>
           <LoginForm
             username={username}
             password={password}
@@ -50,24 +39,8 @@ const Login = () => {
             handlePasswordChange={({ target }) => setPassword(target.value)}
             handleSubmit={handleLogin}
           />
-        </Togglable>
       </div>
     )   
-  }
-
-  return (
-    <div>
-      <form onSubmit={handleLogout}>
-          <p>
-            {user.name} logged in
-          </p>
-          <p>
-            <button type="submit">logout</button>
-          </p>
-        </form>
-
-    </div>
-  )
 }
 
 export default Login
