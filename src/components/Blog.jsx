@@ -1,49 +1,33 @@
-import { useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 
-const Blog = ({ blog, userid, increaseLikes, deleteBlog }) => {
-  const blogStyle = {
-    paddingTop: 10,
-    paddingLeft: 2,
-    border: 'solid',
-    borderWidth: 1,
-    marginBottom: 5
-  }
+const Blog = ({ blogs, userid, increaseLikes, deleteBlog }) => {
+  const id = useParams().id
+  const blog = blogs.find(b => b.id === id)
 
-  const [visible, setVisible] = useState(false)
+  const navigate = useNavigate()
 
-  const toggleVisibility = () => {
-    setVisible(!visible)
-  }
-
-  if (!visible) {
-    return (
-      <div style={blogStyle} data-testid={`blog-${blog.id}`}>
-        <span className="blog-title">{blog.title}</span> {blog.author}
-        <button onClick={toggleVisibility}>show</button>
-      </div>
-    )
-  }
+  if (!blog) return null
 
   const handleDelete = () => {
     if (window.confirm(`Remove blog ${blog.title} by ${blog.author}?`)) {
       deleteBlog(blog.id)
+      navigate('/')
     }
   }
 
   const deleteButtonVisible = { display: blog.user && blog.user.id === userid ? '' : 'none' }
 
   return (
-    <div style={blogStyle} data-testid={`blog-${blog.id}`}>
-      <div>
-        <span className="blog-title">{blog.title}</span> {blog.author}
-        <button onClick={toggleVisibility}>hide</button>
-      </div>
-      {blog.url} <br />
+    <div data-testid={`blog-${blog.id}`}>
+      <h1>{blog.author}: {blog.title}</h1>
+      <a href={blog.url} target="_blank" rel="noopener noreferrer">{blog.url}</a>
       <div>
         <span data-testid={`likes-${blog.id}`}>likes {blog.likes}</span>
-        <button onClick={increaseLikes} data-testid={`like-${blog.id}`}>like</button>
+        <span style={deleteButtonVisible}>
+          <button onClick={() => increaseLikes(blog.id)} data-testid={`like-${blog.id}`}>like</button>
+        </span>
       </div>
-      {blog.user.name}
+      <span>Added by {blog.user.name}</span>
       <div style={deleteButtonVisible}>
         <button onClick={handleDelete}>
           remove

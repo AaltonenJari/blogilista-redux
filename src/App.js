@@ -9,16 +9,25 @@ import {
   BrowserRouter as Router,
   Routes, Route, Link, Navigate
 } from 'react-router-dom'
-
+import { updateBlogAsync, deleteBlogAsync } from './reducers/blogReducer'
+import { setNotification } from './reducers/notificationReducer'
+import Blog from './components/Blog'
+import { initializeBlogs } from './reducers/blogReducer'
 
 const App = () => {
   const dispatch = useDispatch()
 
   useEffect(() => {
-    dispatch(initializeLogin()) 
+    dispatch(initializeLogin())
   }, [dispatch])
 
   const user = useSelector(state => state.login)
+
+   useEffect(() => {
+      dispatch(initializeBlogs()) 
+    }, [dispatch])
+
+  const blogList = useSelector(state => state.blogs)
 
   const handleLogout = () => {
     dispatch(logout())
@@ -28,14 +37,38 @@ const App = () => {
     padding: 5
   }
 
+  const increaseLikesOf = async (id) => {
+    const blog = blogList.find(b => b.id === id)
+    console.log('likes blogList',blogList)
+    console.log('id', id)
+    if (!blog) return
+
+    const updatedBlog = { ...blog, likes: blog.likes + 1 }
+
+    try {
+      await dispatch(updateBlogAsync(updatedBlog))
+      dispatch(setNotification(`liked blog ${updatedBlog.title} by ${updatedBlog.author}`, 5))
+    } catch (error) {
+      dispatch(setNotification(`error updating likes: ${error.message}`, 5))
+    }
+  }
+
+  const deleteBlog = async (id) => {
+    try {
+      await dispatch(deleteBlogAsync(id))
+      dispatch(setNotification('blog deleted', 5))
+    } catch (error) {
+      dispatch(setNotification(`error deleting blog: ${error.message}`, 5))
+    }
+  }
+
   return (
     <Router>
       <div>
         <Link style={padding} to="/">blogs</Link>
         <Link style={padding} to="/users">users</Link>
-        {!user && (
-          <Link style={padding} to="/login">login</Link>
-        )}
+
+        {!user && <Link style={padding} to="/login">login</Link>}
 
         {user && (
           <span style={padding}>
@@ -47,7 +80,18 @@ const App = () => {
       <Notification />
 
       <Routes>
-        <Route path="/" element={<BlogList user={user} />} />
+        <Route
+          path="/blogs/:id"
+          element={
+            <Blog
+              blogs={blogList}
+              userid={user?.id}
+              increaseLikes={increaseLikesOf}
+              deleteBlog={deleteBlog}
+            />
+          }
+        />
+        <Route path="/" element={<BlogList blogList={blogList} />} />
         <Route path="/users" element={<Users />} />
         <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
       </Routes>

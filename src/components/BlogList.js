@@ -1,59 +1,17 @@
-import { useEffect } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
-import { updateBlogAsync, deleteBlogAsync } from '../reducers/blogReducer'
-import Blog from './Blog'
-import { initializeBlogs } from '../reducers/blogReducer'
-import { setNotification } from '../reducers/notificationReducer'
+import { Link } from 'react-router-dom'
 
-const BlogList = (user) => {
-
-  const dispatch = useDispatch()
-
-    useEffect(() => {
-      dispatch(initializeBlogs()) 
-    }, [dispatch])
-  
-  const blogList = useSelector(state => state.blogs)
-
-  const increaseLikesOf = async (id) => {
-    const blog = blogList.find(b => b.id === id)
-    const updatedBlog = { ...blog, likes: blog.likes + 1 }
-
-    try {
-      await dispatch(updateBlogAsync(updatedBlog))
-      const notificationMessage = `liked blog ${updatedBlog.title} by ${updatedBlog.author}`
-      dispatch(setNotification(notificationMessage, 5))
-     } catch (error) {
-      const notificationMessage = `error updating likes: ${error.response && error.response.data && error.response.data.error ? error.response.data.error : error.message}`
-      dispatch(setNotification(notificationMessage, 5))
-    } 
-  }
-
-  const deleteBlog = async (id) => {
-    try {
-      await dispatch(deleteBlogAsync(id))
-      const notificationMessage = 'blog deleted'
-      dispatch(setNotification(notificationMessage, 5))
-    } catch (error) {
-      const notificationMessage = `error deleting blog: ${error.response && error.response.data && error.response.data.error ? error.response.data.error : error.message}`
-      dispatch(setNotification(notificationMessage, 5))
-    }
-  }
-
-
+const BlogList = ({ blogList = [] }) => {
   return (
     <div>
       <h2>blogs</h2>
 
-      {[...blogList].sort((a, b) => b.likes - a.likes).map(blog =>
-        <Blog
-          key={blog.id}
-          blog={blog}
-          userid={user.id}
-          increaseLikes={() => increaseLikesOf(blog.id)}
-          deleteBlog={deleteBlog}
-        />
-      )}
+      <ul>
+        {blogList.map(blog => (
+          <li key={blog.id}>
+            <Link to={`/blogs/${blog.id}`}>{blog.title}</Link>
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }
