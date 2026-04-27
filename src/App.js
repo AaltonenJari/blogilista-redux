@@ -13,6 +13,7 @@ import { updateBlogAsync, deleteBlogAsync } from './reducers/blogReducer'
 import { setNotification } from './reducers/notificationReducer'
 import Blog from './components/Blog'
 import { initializeBlogs } from './reducers/blogReducer'
+import BlogAdditionForm from './components/BlogAdditionForm'
 
 const App = () => {
   const dispatch = useDispatch()
@@ -70,6 +71,7 @@ const App = () => {
     <div>
       <div>
         <Link style={padding} to="/">blogs</Link>
+        <Link style={padding} to="/new">new blog</Link>
         <Link style={padding} to="/users">users</Link>
 
         {!user && <Link style={padding} to="/login">login</Link>}
@@ -98,6 +100,7 @@ const App = () => {
         <Route path="/" element={<BlogList blogList={blogList} />} />
         <Route path="/users" element={<Users />} />
         <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
+        <Route path="/new" element={user ? <BlogAdditionForm /> : <Navigate to="/login" />} />
       </Routes>
     </div>
   )

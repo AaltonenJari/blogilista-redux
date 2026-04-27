@@ -1,9 +1,12 @@
 import { useDispatch } from 'react-redux'
 import { setNotification } from '../reducers/notificationReducer'
 import { appendBlog } from '../reducers/blogReducer'
+import { useNavigate } from 'react-router-dom'
 
 const BlogAdditionForm = () => {
   const dispatch = useDispatch()
+   const navigate = useNavigate()
+
 
   const addBlog = async (event) => {
     event.preventDefault()
@@ -20,6 +23,7 @@ const BlogAdditionForm = () => {
       const notificationMessage = `error adding blog: ${error.response && error.response.data && error.response.data.error ? error.response.data.error : error.message}`
       dispatch(setNotification(notificationMessage, 5))
     }
+    navigate('/')
   }
 
   return (
