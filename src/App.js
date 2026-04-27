@@ -6,8 +6,8 @@ import BlogList from './components/BlogList'
 import Login from './components/Login'
 import { initializeLogin, logout } from './reducers/loginReducer'
 import {
-  BrowserRouter as Router,
-  Routes, Route, Link, Navigate
+  Routes, Route, Link, Navigate,
+  useMatch
 } from 'react-router-dom'
 import { updateBlogAsync, deleteBlogAsync } from './reducers/blogReducer'
 import { setNotification } from './reducers/notificationReducer'
@@ -39,8 +39,7 @@ const App = () => {
 
   const increaseLikesOf = async (id) => {
     const blog = blogList.find(b => b.id === id)
-    console.log('likes blogList',blogList)
-    console.log('id', id)
+
     if (!blog) return
 
     const updatedBlog = { ...blog, likes: blog.likes + 1 }
@@ -62,8 +61,13 @@ const App = () => {
     }
   }
 
+  const match = useMatch('/blogs/:id')
+  const blog = match
+    ? blogList.find(b => b.id === match.params.id)
+    : null
+
   return (
-    <Router>
+    <div>
       <div>
         <Link style={padding} to="/">blogs</Link>
         <Link style={padding} to="/users">users</Link>
@@ -84,7 +88,7 @@ const App = () => {
           path="/blogs/:id"
           element={
             <Blog
-              blogs={blogList}
+              blog={blog}
               userid={user?.id}
               increaseLikes={increaseLikesOf}
               deleteBlog={deleteBlog}
@@ -95,7 +99,7 @@ const App = () => {
         <Route path="/users" element={<Users />} />
         <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
       </Routes>
-    </Router>
+    </div>
   )
 }
 
