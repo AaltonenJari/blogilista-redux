@@ -5,15 +5,18 @@ import { useNavigate } from 'react-router-dom'
 
 const BlogAdditionForm = () => {
   const dispatch = useDispatch()
-   const navigate = useNavigate()
+  const navigate = useNavigate()
 
 
   const addBlog = async (event) => {
     event.preventDefault()
+
+    const form = event.target.elements
+
     const blog = {
-      title: event.target.title.value,
-      author: event.target.author.value,
-      url: event.target.url.value
+      title: form.title.value,
+      author: form.author.value,
+      url: form.url.value
     }
     try {
       await dispatch(appendBlog(blog))
@@ -29,23 +32,25 @@ const BlogAdditionForm = () => {
   return (
     <div>
       <h2>Create new</h2>
+
       <form onSubmit={addBlog}>
         <div>
           <label htmlFor="title">title:</label>
-          <input id="title" type="text" />
+          <input id="title" name="title" type="text" />
         </div>
         <div>
           <label htmlFor="author">author:</label>
-          <input id="author" type="text" />
+          <input id="author" name="author" type="text" />
         </div>
         <div>
           <label htmlFor="url">url:</label>
-          <input id="url" type="text" />
+          <input id="url" name="url" type="text" />
         </div>
+
         <button type="submit">create</button>
       </form>
-    </div>
-  )
+    </div> 
+ )
 }
 
 export default BlogAdditionForm

@@ -1,66 +1,96 @@
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import { vi } from 'vitest'
+import { MemoryRouter } from 'react-router-dom'
 import Blog from './Blog'
 
-test('renders content', () => {
+test('blog content and like count are displayed to user logged in', () => {
   const blog = {
-    title: 'Component testing is done with react-testing-library',
-    author: 'Test Author',
-    url: 'http://example.com',
-    likes: 5
-  }
-
-  render(<Blog blog={blog} />)
-
-  const element = screen.getByText(/Component testing is done with react-testing-library/)
-  expect(element).toBeInTheDocument()
-})
-
-test('shows url, likes and user after clicking view button', async () => {
-  const blog = {
+    id: '123',
     title: 'Component testing is done with react-testing-library',
     author: 'Test Author',
     url: 'http://example.com',
     likes: 5,
     user: {
-      id: '123',
+      id: '456',
       name: 'Test User'
     }
   }
 
-  const { container } = render(<Blog blog={blog} />)
+  render(
+    <MemoryRouter>
+      <Blog blog={blog} />
+    </MemoryRouter>
+  )
 
-  const user = userEvent.setup()
-  await user.click(screen.getByText('view'))
+  expect(screen.getByText('Test Author: Component testing is done with react-testing-library')).toBeInTheDocument()
+  expect(screen.getByText('http://example.com')).toBeInTheDocument()
+  expect(screen.getByText('likes 5')).toBeInTheDocument()
+  expect(screen.getByText('Added by Test User')).toBeInTheDocument()
 
-  expect(container).toHaveTextContent('http://example.com')
-  expect(container).toHaveTextContent('likes')
-  expect(container).toHaveTextContent('5')
-  expect(container).toHaveTextContent('Test User')
+  const likeButton = screen.queryByRole('button', { name: /like/i })
+  expect(likeButton).not.toBeInTheDocument()
+
+  const removeButton = screen.queryByRole('button', { name: /remove/i })
+  expect(removeButton).not.toBeInTheDocument()
 })
 
-test('like button calls event handler twice when clicked twice', async () => {
+test('kirjautuneelle käyttäjälle, joka ei ole blogin luoja näytetään ainoastaan tykkäysnappi', () => {
   const blog = {
-    title: 'Component testing is done with react-testing-library',
-    author: 'Test Author',
+    id: '123',
+    title: 'Testiblogi',
+    author: 'Testikirjoittaja',
     url: 'http://example.com',
     likes: 5,
     user: {
-      id: '123',
-      name: 'Test User'
+      id: '456',
+      name: 'Testikäyttäjä'
     }
   }
 
-  const mockHandler = vi.fn()
+  render(
+    <MemoryRouter>
+      <Blog blog={blog} userid="999" />
+    </MemoryRouter>
+  )
 
-  render(<Blog blog={blog} increaseLikes={mockHandler} />)
+  expect(screen.getByText('Testikirjoittaja: Testiblogi')).toBeInTheDocument()
+  expect(screen.getByText('http://example.com')).toBeInTheDocument()
+  expect(screen.getByText('likes 5')).toBeInTheDocument()
+  expect(screen.getByText('Added by Testikäyttäjä')).toBeInTheDocument()
 
-  const user = userEvent.setup()
-  await user.click(screen.getByText('view'))
-  const likeButton = screen.getByText('like')
-  await user.click(likeButton)
-  await user.click(likeButton)
+  const likeButton = screen.getByRole('button', { name: /like/i })
+  expect(likeButton).toBeVisible()
 
-  expect(mockHandler).toHaveBeenCalledTimes(2)
+  const removeButton = screen.queryByRole('button', { name: /remove/i })
+  expect(removeButton).not.toBeInTheDocument()
+})
+
+test('blogin luojalle näytetään sekä tykkäys- että poistonappi', () => {
+  const blog = {
+    id: '123',
+    title: 'Testiblogi',
+    author: 'Testikirjoittaja',
+    url: 'http://example.com',
+    likes: 5,
+    user: {
+      id: '456',
+      name: 'Testikäyttäjä'
+    }
+  }
+
+  render(
+    <MemoryRouter>
+      <Blog blog={blog} userid="456" />
+    </MemoryRouter>
+  )
+
+  expect(screen.getByText('Testikirjoittaja: Testiblogi')).toBeInTheDocument()
+  expect(screen.getByText('http://example.com')).toBeInTheDocument()
+  expect(screen.getByText('likes 5')).toBeInTheDocument()
+  expect(screen.getByText('Added by Testikäyttäjä')).toBeInTheDocument()
+
+  const likeButton = screen.getByRole('button', { name: /like/i })
+  expect(likeButton).toBeVisible()
+
+  const removeButton = screen.getByRole('button', { name: /remove/i })
+  expect(removeButton).toBeVisible()
 })

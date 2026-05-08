@@ -24,9 +24,9 @@ const App = () => {
 
   const user = useSelector(state => state.login)
 
-   useEffect(() => {
-      dispatch(initializeBlogs()) 
-    }, [dispatch])
+  useEffect(() => {
+    dispatch(initializeBlogs()) 
+  }, [dispatch])
 
   const blogList = useSelector(state => state.blogs)
 
